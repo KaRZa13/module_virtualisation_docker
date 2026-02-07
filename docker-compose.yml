@@ -1,0 +1,45 @@
+services:
+  backend:
+    build: ./backend
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=postgres://postgres:password@db:5432/appdb
+      - RUST_LOG=info
+    depends_on:
+      - db
+
+  frontend:
+    build: ./frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - HOST=0.0.0.0
+      - NUXT_PUBLIC_API_BASE=http://localhost:8080
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: appdb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  motor-admin:
+    image: motoradmin/motoradmin
+    restart: always
+    ports:
+      - "9000:3000"
+    environment:
+      - DATABASE_URL=postgres://postgres:password@db:5432/appdb
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
