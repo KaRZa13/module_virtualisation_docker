@@ -6,17 +6,6 @@ Ce projet fournit une stack complete avec :
 - Base de donnees PostgreSQL (port interne 5432)
 - Motor Admin (port 9000)
 
-## Prerequis
-
-- Docker Engine installe
-- Docker Compose (plugin `docker compose`)
-
-Verifier l'installation :
-```bash
-docker --version
-docker compose version
-```
-
 ## Installation
 
 1) Cloner le depot et se placer a la racine du projet.
