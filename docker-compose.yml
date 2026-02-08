@@ -1,13 +1,17 @@
+version: "3.9"
+
 services:
   backend:
     image: karza/counter-backend:latest
     deploy:
       replicas: 2
-    ports:
-      - "8080:8080"
+      restart_policy:
+        condition: on-failure
     environment:
-      - DATABASE_URL=postgres://postgres:password@db:5432/appdb
-      - RUST_LOG=info
+      DATABASE_URL: postgres://postgres:password@db:5432/appdb
+      RUST_LOG: info
+    networks:
+      - app_net
     depends_on:
       - db
 
@@ -15,42 +19,51 @@ services:
     image: karza/counter-frontend:latest
     deploy:
       replicas: 2
-    restart: always
+      restart_policy:
+        condition: any
     ports:
       - "3000:3000"
     environment:
-      - HOST=0.0.0.0
-      - NUXT_PUBLIC_API_BASE=http://192.168.1.79:8080
+      HOST: 0.0.0.0
+      NUXT_PUBLIC_API_BASE: http://backend:8080
+    networks:
+      - app_net
     depends_on:
       - backend
 
   db:
     image: postgres:15
-    restart: always
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: appdb
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    deploy:
-      placement:
-        constraints:
-          - node.role == manager
+    networks:
+      - app_net
 
   motor-admin:
     image: motoradmin/motoradmin
-    restart: always
-    ports:
-      - "8000:3000"
-    environment:
-      - DATABASE_URL=postgres://postgres:password@db:5432/appdb
-    depends_on:
-      - db
     deploy:
       placement:
         constraints:
-           - node.role == worker
+          - node.role == worker
+    ports:
+      - "8000:3000"
+    environment:
+      DATABASE_URL: postgres://postgres:password@db:5432/appdb
+    networks:
+      - app_net
+    depends_on:
+      - db
 
 volumes:
   postgres_data:
+
+networks:
+  app_net:
+    driver: overlay
