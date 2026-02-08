@@ -1,7 +1,8 @@
 services:
   backend:
-    build: ./backend
-    restart: always
+    image: karza/counter-backend:latest
+    deploy:
+      replicas: 2
     ports:
       - "8080:8080"
     environment:
@@ -11,13 +12,15 @@ services:
       - db
 
   frontend:
-    build: ./frontend
+    image: karza/counter-frontend:latest
+    deploy:
+      replicas: 2
     restart: always
     ports:
       - "3000:3000"
     environment:
       - HOST=0.0.0.0
-      - NUXT_PUBLIC_API_BASE=http://localhost:8080
+      - NUXT_PUBLIC_API_BASE=http://backend:8080
     depends_on:
       - backend
 
@@ -30,6 +33,10 @@ services:
       POSTGRES_DB: appdb
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
 
   motor-admin:
     image: motoradmin/motoradmin
