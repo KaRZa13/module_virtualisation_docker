@@ -45,8 +45,6 @@ services:
       POSTGRES_DB: appdb
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - app_net
 
   motor-admin:
     image: motoradmin/motoradmin
