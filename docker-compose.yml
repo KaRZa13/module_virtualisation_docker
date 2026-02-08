@@ -47,6 +47,10 @@ services:
       - DATABASE_URL=postgres://postgres:password@db:5432/appdb
     depends_on:
       - db
+    deploy:
+      placement:
+        constraints:
+           - ["node.role == worker"]
 
 volumes:
   postgres_data:
