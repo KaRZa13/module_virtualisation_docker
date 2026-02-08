@@ -6,7 +6,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - DATABASE_URL=postgres://postgres:password@counter-app_db:5432/appdb
+      - DATABASE_URL=postgres://postgres:password@db:5432/appdb
       - RUST_LOG=info
     depends_on:
       - db
