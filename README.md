@@ -31,6 +31,8 @@ docker compose ps
 - Motor Admin: http://localhost:9000
 - PostgreSQL: acces interne via `db:5432`
 
+Sur une VM, remplacez `localhost` par l'IP publique/privée de la VM dans `NUXT_PUBLIC_API_BASE` (docker-compose.yml).
+
 ## Commandes utiles
 
 - Construire les images :
