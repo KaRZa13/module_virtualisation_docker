@@ -20,7 +20,7 @@ services:
       - "3000:3000"
     environment:
       - HOST=0.0.0.0
-      - NUXT_PUBLIC_API_BASE=http://backend:8080
+      - NUXT_PUBLIC_API_BASE=http://localhost:8080
     depends_on:
       - backend
 
@@ -44,7 +44,7 @@ services:
     ports:
       - "8000:3000"
     environment:
-      - DATABASE_URL=postgresql://postgres:password@counter-app_db:5432/appdb
+      - DATABASE_URL=postgres://postgres:password@counter-app_db:5432/appdb
     depends_on:
       - db
     deploy:

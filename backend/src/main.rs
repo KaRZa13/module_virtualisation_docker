@@ -2,7 +2,7 @@ use actix_cors::Cors;
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use serde::{Deserialize, Serialize};
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
-use std::env;
+use std::{env, time::Duration};
 
 #[derive(Serialize, Deserialize)]
 struct Counter {
@@ -69,16 +69,44 @@ async fn init_db(pool: &Pool<Postgres>) -> Result<(), sqlx::Error> {
     Ok(())
 }
 
+async fn connect_with_retry(database_url: &str) -> Pool<Postgres> {
+    const MAX_ATTEMPTS: u32 = 15;
+    const RETRY_DELAY: Duration = Duration::from_secs(2);
+
+    for attempt in 1..=MAX_ATTEMPTS {
+        match PgPoolOptions::new()
+            .max_connections(5)
+            .connect(database_url)
+            .await
+        {
+            Ok(pool) => return pool,
+            Err(err) if attempt < MAX_ATTEMPTS => {
+                log::warn!(
+                    "Postgres not ready (attempt {}/{}): {}. Retrying...",
+                    attempt,
+                    MAX_ATTEMPTS,
+                    err
+                );
+                tokio::time::sleep(RETRY_DELAY).await;
+            }
+            Err(err) => {
+                panic!(
+                    "Failed to connect to Postgres after {} attempts: {}",
+                    MAX_ATTEMPTS, err
+                );
+            }
+        }
+    }
+
+    unreachable!("Retry loop should return or panic before this point");
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     env_logger::init();
     
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let pool = PgPoolOptions::new()
-        .max_connections(5)
-        .connect(&database_url)
-        .await
-        .expect("Failed to connect to Postgres");
+    let pool = connect_with_retry(&database_url).await;
 
     init_db(&pool).await.expect("Failed to initialize DB");
 
