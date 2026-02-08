@@ -42,7 +42,7 @@ services:
     image: motoradmin/motoradmin
     restart: always
     ports:
-      - "9000:3000"
+      - "8000:3000"
     environment:
       - DATABASE_URL=postgres://postgres:password@db:5432/appdb
     depends_on:
